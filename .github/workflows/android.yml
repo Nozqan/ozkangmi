@@ -23,18 +23,22 @@ jobs:
           pip install --upgrade pip
           pip install Cython==0.29.33 buildozer
 
-      - name: Force Accept Android Licenses
+      - name: Manual SDK Fix (Cmdline-tools)
         run: |
-          # SDK Lisanslarını manuel olarak dosya sistemine yazdırıyoruz
+          # Buildozer'ın bulamadığı sdkmanager yollarını manuel oluşturuyoruz
+          mkdir -p $HOME/.buildozer/android/platform/android-sdk/cmdline-tools/latest
+          wget https://dl.google.com/android/repository/commandlinetools-linux-9477386_latest.zip
+          unzip -q commandlinetools-linux-9477386_latest.zip
+          mv cmdline-tools/* $HOME/.buildozer/android/platform/android-sdk/cmdline-tools/latest/
+          
+          # Lisansları kökten kabul et
           mkdir -p $HOME/.android
           touch $HOME/.android/repositories.cfg
-          mkdir -p /home/runner/.buildozer/android/platform/android-sdk/licenses
-          echo -e "8933bad161af4178b1185d1a37fbf41ea5269c55\nd56f5187479451e44fcd78146013a5937d2b9504\n24333f8a63b6825e72157d8517bc9a0dbdb0a8f2" > /home/runner/.buildozer/android/platform/android-sdk/licenses/android-sdk-license
-          echo -e "84831b9409646a918e30573bab4c9c91346d8abd\n50466d3a0c07589630560148345e3706a0653157" > /home/runner/.buildozer/android/platform/android-sdk/licenses/android-sdk-preview-license
+          yes | $HOME/.buildozer/android/platform/android-sdk/cmdline-tools/latest/bin/sdkmanager --sdk_root=$HOME/.buildozer/android/platform/android-sdk --licenses
 
       - name: Build with Buildozer
         run: |
-          # Buildozer'ı sessiz modda ve hata ayıklama seviyesinde başlat
+          # Buildozer'ı yolu görmesi için zorlayarak başlatıyoruz
           buildozer -v android debug
         env:
           ACCEPT_SDK_LICENSE: 1
