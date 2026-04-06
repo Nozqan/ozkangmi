@@ -31,14 +31,15 @@ jobs:
           unzip -q commandlinetools-linux-9477386_latest.zip
           mv cmdline-tools/* $HOME/.buildozer/android/platform/android-sdk/cmdline-tools/latest/
           
-          # Lisansları kökten kabul et
+          # Lisansları kökten kabul et ve yolu sisteme tanıt
           mkdir -p $HOME/.android
           touch $HOME/.android/repositories.cfg
           yes | $HOME/.buildozer/android/platform/android-sdk/cmdline-tools/latest/bin/sdkmanager --sdk_root=$HOME/.buildozer/android/platform/android-sdk --licenses
 
       - name: Build with Buildozer
         run: |
-          # Buildozer'ı yolu görmesi için zorlayarak başlatıyoruz
+          # Buildozer'ın yolu görmesi için manuel path ekleyerek başlatıyoruz
+          export PATH=$PATH:$HOME/.buildozer/android/platform/android-sdk/cmdline-tools/latest/bin
           buildozer -v android debug
         env:
           ACCEPT_SDK_LICENSE: 1
