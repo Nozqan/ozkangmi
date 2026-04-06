@@ -23,22 +23,27 @@ jobs:
           pip install --upgrade pip
           pip install Cython==0.29.33 buildozer
 
-      - name: Manual SDK Fix (Cmdline-tools)
+      - name: Manual SDK and Path Fix
         run: |
-          # Buildozer'ın bulamadığı sdkmanager yollarını manuel oluşturuyoruz
-          mkdir -p $HOME/.buildozer/android/platform/android-sdk/cmdline-tools/latest
+          # SDK ana dizinini oluştur
+          mkdir -p $HOME/.buildozer/android/platform/android-sdk/cmdline-tools
+          
+          # Command line tools indir ve kur
           wget https://dl.google.com/android/repository/commandlinetools-linux-9477386_latest.zip
           unzip -q commandlinetools-linux-9477386_latest.zip
-          mv cmdline-tools/* $HOME/.buildozer/android/platform/android-sdk/cmdline-tools/latest/
+          mv cmdline-tools $HOME/.buildozer/android/platform/android-sdk/cmdline-tools/latest
           
-          # Lisansları kökten kabul et ve yolu sisteme tanıt
-          mkdir -p $HOME/.android
-          touch $HOME/.android/repositories.cfg
+          # BUILDOZER'I KANDIRMA OPERASYONU:
+          # Olmayan 'tools/bin' klasörünü oluşturup içine link veriyoruz
+          mkdir -p $HOME/.buildozer/android/platform/android-sdk/tools/bin
+          ln -s $HOME/.buildozer/android/platform/android-sdk/cmdline-tools/latest/bin/sdkmanager $HOME/.buildozer/android/platform/android-sdk/tools/bin/sdkmanager
+          
+          # Lisansları kabul et
           yes | $HOME/.buildozer/android/platform/android-sdk/cmdline-tools/latest/bin/sdkmanager --sdk_root=$HOME/.buildozer/android/platform/android-sdk --licenses
 
       - name: Build with Buildozer
         run: |
-          # Buildozer'ın yolu görmesi için manuel path ekleyerek başlatıyoruz
+          # Yolları tanıt ve derle
           export PATH=$PATH:$HOME/.buildozer/android/platform/android-sdk/cmdline-tools/latest/bin
           buildozer -v android debug
         env:
