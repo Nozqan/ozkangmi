@@ -9,48 +9,50 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-    - name: Kodu çek
-      uses: actions/checkout@v3
+      - name: Kodu çek
+        uses: actions/checkout@v4
 
-    - name: Python kur
-      uses: actions/setup-python@v4
-      with:
-        python-version: "3.10"
+      - name: Python kur
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.10'
 
-    # 🔥 JAVA 17 EKLENDİ (HATA BURADAYDI)
-    - name: Java kur
-      uses: actions/setup-java@v3
-      with:
-        distribution: 'temurin'
-        java-version: '17'
+      - name: Java 17 kur (ÖNEMLİ)
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'temurin'
+          java-version: '17'
 
-    - name: Sistem paketleri
-      run: |
-        sudo apt update
-        sudo apt install -y zip unzip git openjdk-17-jdk
+      - name: Sistem paketleri
+        run: |
+          sudo apt update
+          sudo apt install -y zip unzip openjdk-17-jdk
 
-    - name: Android SDK kur
-      run: |
-        mkdir -p $HOME/android-sdk/cmdline-tools
-        cd $HOME/android-sdk
-        wget https://dl.google.com/android/repository/commandlinetools-linux-11076708_latest.zip
-        unzip commandlinetools-linux-11076708_latest.zip
-        mv cmdline-tools cmdline-tools/latest
+      - name: Android SDK kur
+        run: |
+          mkdir -p $HOME/android-sdk/cmdline-tools
+          cd $HOME/android-sdk
+          wget https://dl.google.com/android/repository/commandlinetools-linux-11076708_latest.zip -O sdk.zip
+          unzip sdk.zip -d cmdline-tools
+          mv cmdline-tools/cmdline-tools cmdline-tools/latest
 
-        yes | $HOME/android-sdk/cmdline-tools/latest/bin/sdkmanager --licenses
-        $HOME/android-sdk/cmdline-tools/latest/bin/sdkmanager "platform-tools" "platforms;android-33" "build-tools;33.0.2"
+          export ANDROID_HOME=$HOME/android-sdk
+          export PATH=$ANDROID_HOME/cmdline-tools/latest/bin:$ANDROID_HOME/platform-tools:$PATH
 
-    - name: Buildozer kur
-      run: |
-        pip install --upgrade pip
-        pip install buildozer cython
+          yes | sdkmanager --licenses
+          sdkmanager "platform-tools" "platforms;android-33" "build-tools;33.0.0"
 
-    - name: APK oluştur
-      run: |
-        buildozer android debug
+      - name: Buildozer kur
+        run: |
+          pip install --upgrade pip
+          pip install buildozer cython
 
-    - name: APK yükle
-      uses: actions/upload-artifact@v4
-      with:
-        name: apk
-        path: bin/*.apk
+      - name: APK oluştur
+        run: |
+          buildozer android debug
+
+      - name: APK yükle
+        uses: actions/upload-artifact@v4
+        with:
+          name: apk
+          path: bin/*.apk
