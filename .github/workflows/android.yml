@@ -19,27 +19,19 @@ jobs:
       - name: Install dependencies
         run: |
           sudo apt update
-          sudo apt install -y git zip unzip autoconf libtool pkg-config zlib1g-dev libncurses5-dev libncursesw5-dev libtinfo6 cmake libffi-dev libssl-dev
+          sudo apt install -y git zip unzip autoconf libtool pkg-config zlib1g-dev libncurses5-dev libncursesw5-dev libtinfo6 cmake libffi-dev libssl-dev openjdk-17-jdk
           pip install --upgrade pip
           pip install Cython==0.29.33 buildozer
 
-      - name: Fix Git Submodule Issue
-        run: |
-          # Git klonlama hatalarını engellemek için güvenli ayarları yap
-          git config --global http.postBuffer 524288000
-          git config --global core.compression 0
-
       - name: Build with Buildozer
         run: |
-          # 'yes' komutu yerine buildozer'ın kendi lisans onayını ve 
-          # klonlama hatasını engellemek için --profile ekliyoruz
-          buildozer android debug
+          # Lisansları kökten kabul et
+          mkdir -p ~/.android
+          touch ~/.android/repositories.cfg
+          # Buildozer derlemesini başlat
+          buildozer -v android debug
         env:
           ACCEPT_SDK_LICENSE: 1
-
-      - name: Upload Artifact
-        uses: actions/upload-artifact@v4
-        with:
-          name: OzkanGMI_APK
-          path: bin/*.apk
+          # Java ana dizinini netleştiriyoruz
+          JAVA_HOME: /usr/lib/jvm/java-17-openjdk-amd64
           
